@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1e1e1e;
+            color: white;
+        }
+        button {
+            background-color: #00a2ff;
+            color: black;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0059ff;
+        }
+        .nombre-clickeable {
+            cursor: pointer;
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+        .nombre-clickeable:hover {
+            background-color: #555;
+        }
+        .nombre-clickeable.seleccionado {
+            background-color: #00a2ff;
+            color: black;
+        }
+        .estado-boton {
+            margin-left: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: background-color 0.3s ease;
+        }
+        .estado-boton.pagado {
+            background-color: green;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        img {
+            margin-top: 20px;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1></h1>
+    <h2></h2>
+    <img src="https://i.ibb.co/bP0Nxrs/LPDR-copia.png" alt="Los Pibes del Rap" style="width: 300px; height: auto;">
+    <div id="configuracion">
+        <input type="text" id="participante" placeholder="Nombre del participante o equipo">
+        <button onclick="agregarParticipante()">Agregar Participante</button>
+        <h3>Participantes:</h3> 
+        <ul id="listaParticipantes"></ul>
+        <button onclick="generarCruces()">Generar Cruces</button>
+    </div>
+    <div id="resultados"></div>
+    <script>
+        const participantes = [];
+        let rondaActual = 8; // Valor por defecto para comenzar en octavos
+
+        document.getElementById('participante').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                agregarParticipante();
+            }
+        });
+
+        function agregarParticipante() {
+            const input = document.getElementById('participante');
+            const nombre = input.value.trim();
+            if (nombre) {
+                participantes.push({ nombre, pagado: false });
+                actualizarLista();
+                input.value = '';
+            }
+        }
+
+        function actualizarLista() {
+            const lista = document.getElementById('listaParticipantes');
+            lista.innerHTML = '';
+            participantes.forEach((p, i) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${i + 1}. ${p.nombre} <button class="estado-boton ${p.pagado ? 'pagado' : ''}" onclick="togglePago(${i})">${p.pagado ? 'Pagado' : 'No Pagó'}</button>`;
+                lista.appendChild(li);
+            });
+        }
+
+        function togglePago(index) {
+            participantes[index].pagado = !participantes[index].pagado;
+            actualizarLista();
+        }
+
+        function generarCruces() {
+            if (participantes.length >= 32) {
+                rondaActual = 16; // Cambiar a dieciseisavos si hay 32 o más participantes
+            }
+            document.getElementById('configuracion').style.display = 'none';
+            mostrarCruces(participantes.map(p => p.nombre), obtenerTituloRonda());
+        }
+
+        function mostrarCruces(lista, titulo) {
+            const resultados = document.getElementById('resultados');
+            resultados.innerHTML = `<h2>${titulo}</h2>`;
+            const mezclados = lista.sort(() => Math.random() - 0.5);
+
+            const grupos = [];
+            for (let i = 0; i < rondaActual; i++) {
+                grupos.push([]);
+            }
+
+            mezclados.forEach((p, index) => {
+                grupos[index % rondaActual].push(p);
+            });
+
+            grupos.forEach((grupo, i) => {
+                const divGrupo = document.createElement('div');
+                divGrupo.innerHTML = `<h4>Grupo ${i + 1}</h4>`;
+                grupo.forEach(part => {
+                    const span = document.createElement('span');
+                    span.textContent = part;
+                    span.classList.add('nombre-clickeable');
+                    span.onclick = () => span.classList.toggle('seleccionado');
+                    divGrupo.appendChild(span);
+                });
+                
+                if (rondaActual === 16 || rondaActual === 8) {
+                    const plusButton = document.createElement('button');
+                    plusButton.textContent = '+';
+                    plusButton.style.marginLeft = '10px';
+                    plusButton.onclick = () => {
+                        const nuevoRival = prompt("Ingresa el nombre del nuevo rival:");
+                        if (nuevoRival) {
+                            const nuevoSpan = document.createElement('span');
+                            nuevoSpan.textContent = nuevoRival;
+                            nuevoSpan.classList.add('nombre-clickeable');
+                            nuevoSpan.onclick = () => nuevoSpan.classList.toggle('seleccionado');
+                            divGrupo.appendChild(nuevoSpan);
+                        }
+                    };
+                    divGrupo.appendChild(plusButton);
+                }
+
+                resultados.appendChild(divGrupo);
+            });
+
+            const botonSiguiente = document.createElement('button');
+            botonSiguiente.textContent = "Siguiente Ronda";
+            botonSiguiente.onclick = avanzarRonda;
+            resultados.appendChild(botonSiguiente);
+        }
+
+        function avanzarRonda() {
+            const seleccionados = Array.from(document.querySelectorAll('.nombre-clickeable.seleccionado')).map(e => e.textContent);
+            if (seleccionados.length !== rondaActual) {
+                alert(`Debes seleccionar exactamente ${rondaActual} participantes.`);
+                return;
+            }
+
+            if (rondaActual > 1) {
+                rondaActual /= 2;
+                mostrarCruces(seleccionados, obtenerTituloRonda());
+            } else {
+                mostrarGanador(seleccionados[0]);
+            }
+        }
+
+        function obtenerTituloRonda() {
+            switch (rondaActual) {
+                case 16: return "Dieciseisavos de Final";
+                case 8: return "Octavos de Final";
+                case 4: return "Cuartos de Final";
+                case 2: return "Semifinales";
+                case 1: return "Final";
+                default: return "";
+            }
+        }
+
+        function mostrarGanador(ganador) {
+            const totalPagado = participantes.filter(p => p.pagado).length * 25;
+            const resultados = document.getElementById('resultados');
+            resultados.innerHTML = `<h2>¡GANADOR!</h2><p>${ganador}</p><h3>Total Recaudado: $${totalPagado}</h3>`;
+            const botonReiniciar = document.createElement('button');
+            botonReiniciar.textContent = "Reiniciar Compe";
+            botonReiniciar.onclick = () => location.reload();
+            resultados.appendChild(botonReiniciar);
+        }
+    </script>
+</body>
+</html>
