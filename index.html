@@ -124,53 +124,41 @@
         function mostrarCruces(lista, titulo) {
             const resultados = document.getElementById('resultados');
             resultados.innerHTML = `<h2>${titulo}</h2>`;
-            const mezclados = lista.sort(() => Math.random() - 0.5);
 
-            const grupos = [];
-            for (let i = 0; i < rondaActual; i++) {
-                grupos.push([]);
-            }
+            
 
-            mezclados.forEach((p, index) => {
-                grupos[index % rondaActual].push(p);
-            });
-
-            grupos.forEach((grupo, i) => {
-                const divGrupo = document.createElement('div');
-                divGrupo.innerHTML = `<h4>Grupo ${i + 1}</h4>`;
-                grupo.forEach(part => {
-                    const span = document.createElement('span');
-                    span.textContent = part;
-                    span.classList.add('nombre-clickeable');
-                    span.onclick = () => span.classList.toggle('seleccionado');
-                    divGrupo.appendChild(span);
-                });
-                
-                if (rondaActual === 16 || rondaActual === 8) {
-                    const plusButton = document.createElement('button');
-                    plusButton.textContent = '+';
-                    plusButton.style.marginLeft = '10px';
-                    plusButton.onclick = () => {
-                        const nuevoRival = prompt("Ingresa el nombre del nuevo rival:");
-                        if (nuevoRival) {
-                            const nuevoSpan = document.createElement('span');
-                            nuevoSpan.textContent = nuevoRival;
-                            nuevoSpan.classList.add('nombre-clickeable');
-                            nuevoSpan.onclick = () => nuevoSpan.classList.toggle('seleccionado');
-                            divGrupo.appendChild(nuevoSpan);
-                        }
-                    };
-                    divGrupo.appendChild(plusButton);
+            
+         
+            span.classList.add('nombre-clickeable');
+            span.onclick = () => span.classList.toggle('seleccionado');
+            divGrupo.appendChild(span);
+        });
+        
+        if (rondaActual === 16 || rondaActual === 8) {
+            const plusButton = document.createElement('button');
+            plusButton.textContent = '+';
+            plusButton.style.marginLeft = '10px';
+            plusButton.onclick = () => {
+                const nuevoRival = prompt("Ingresa el nombre del nuevo rival:");
+                if (nuevoRival) {
+                    const nuevoSpan = document.createElement('span');
+                    nuevoSpan.textContent = nuevoRival;
+                    nuevoSpan.classList.add('nombre-clickeable');
+                    nuevoSpan.onclick = () => nuevoSpan.classList.toggle('seleccionado');
+                    divGrupo.appendChild(nuevoSpan);
                 }
-
-                resultados.appendChild(divGrupo);
-            });
-
-            const botonSiguiente = document.createElement('button');
-            botonSiguiente.textContent = "Siguiente Ronda";
-            botonSiguiente.onclick = avanzarRonda;
-            resultados.appendChild(botonSiguiente);
+            };
+            divGrupo.appendChild(plusButton);
         }
+
+        resultados.appendChild(divGrupo);
+    });
+
+    const botonSiguiente = document.createElement('button');
+    botonSiguiente.textContent = "Siguiente Ronda";
+    botonSiguiente.onclick = avanzarRonda;
+    resultados.appendChild(botonSiguiente);
+}
 
         function avanzarRonda() {
             const seleccionados = Array.from(document.querySelectorAll('.nombre-clickeable.seleccionado')).map(e => e.textContent);
